@@ -1,0 +1,6 @@
+# not pushing the .env files
+.env
+*.env
+
+.csv 
+*.csv
