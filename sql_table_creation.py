@@ -27,14 +27,14 @@ print(tables_names) ## confirming connection worked in addition to printing the 
 patients = """
 create table if not exists patients (
     id int auto_increment,
-    mrn varchar(255),
+    mrn varchar(255) NOT NULL unique,
     first_name varchar(255) NOT NULL,
     last_name varchar(255) NOT NULL,
     zip_code varchar(255) NOT NULL,
     dob varchar(255),
     gender varchar(255),
     contact_mobile varchar(255) NOT NULL,
-    contact_email varchar(225) NOT NULL,
+    contact_email varchar(255) NOT NULL,
     PRIMARY KEY (id) 
 ); 
 """
@@ -50,38 +50,38 @@ create table if not exists medications (
 """
 
 treatments_procedures = """
-create table if not exist treatments_procedure (
+create table if not exists treatments_procedure (
     id int auto_increment,
-    treatment_cpt_code varchar(225) default null unique, 
-    cpt_code_description varchar(225) default null unique,
+    treatment_cpt_code varchar(255) default null unique, 
+    cpt_code_description varchar(255) default null unique,
     PRIMARY KEY (id)
-);
+); 
 """
 
 conditions = """
-create table if not exist conditions (
+create table if not exists conditions (
     id int auto_increment,
     icd10_code varchar(255) default null unique,
     icd10_description varchar(255) default null,
     PRIMARY KEY (id) 
-);
+);defualt
 """
 
 social_determinant = """
-create table if not exist social_determinant (
+create table if not exists social_determinant (
     id int auto_increment, 
-    social_determinant_loinc_code varchar(225) default null unique, 
-    loinc_code_desciprtion varchar(225) defualt null, 
+    social_determinant_loinc_code varchar(255) default null unique, 
+    loinc_code_desciprtion varchar(255) default null, 
     PRIMARY KEY (id)
 );
 """
 
 patient_current_info = """
-create table if not exist patient_current_info (
+create table if not exists patient_current_info (
     id int auto_increment, 
-    mrn varchar(225) default null, 
-    icd10_code varchar (225) default null,
-    loinc_code varchar (225) defualt null, 
+    mrn varchar(255) default null, 
+    icd10_code varchar (255) default null,
+    loinc_code varchar (255) default null, 
     PRIMARY KEY (id),
     FOREIGN KEY (mrn) REFERENCES patients(mrn) ON DELETE CASCADE, 
     FOREIGN KEY (icd10_code) REFERENCES conditions(icd10_code) ON DELETE CASCADE, 
@@ -90,24 +90,25 @@ create table if not exist patient_current_info (
 """
 
 patient_medications = """
-create table if not exist patient_medications (
+create table if not exists patient_medications (
     id int auto_increment, 
-    mrn varchar(225) default null, 
-    ndc_code varchar(225) default null, 
+    mrn varchar(255) default null, 
+    ndc_code varchar(255) default null, 
     PRIMARY KEY (id),
     FOREIGN KEY (mrn) REFERENCES patients(mrn) ON DELETE CASCADE, 
-    FOREIGN KEY (ndc_code) REFERENCES patients_medications(med_ndc) ON DELETE CASCADE
+    FOREIGN KEY (ndc_code) REFERENCES medications(med_ndc) ON DELETE CASCADE
 );
 """
 
 patient_treatment = """
-create table if not exist patient_treatment (
+create table if not exists patient_treatment (
     id int auto_increment,
-    mrn varchar(225) default null, 
-    cpt_code varchar(225) default null, 
+    mrn varchar(255) default null, 
+    cpt_code varchar(255) default null, 
     PRIMARY KEY (id), 
     FOREIGN KEY (mrn) REFERENCES patients(mrn) ON DELETE CASCADE, 
-    FOREIGN KEY (cpt_code) REFERENCEs treatment_procedure(treatment_cpt_code) ON DELETE CASCADE
+    FOREIGN KEY (cpt_code) REFERENCES treatments_procedure(treatment_cpt_code) ON DELETE CASCADE
+);
 """
 
 ##### executing the functions that contains the code to create the tables #####
