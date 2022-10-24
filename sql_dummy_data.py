@@ -1,4 +1,6 @@
+from ast import Break
 import dbm
+from tkinter.tix import COLUMN
 import pandas as pd 
 import sqlalchemy
 from sqlalchemy import create_engine
@@ -69,4 +71,120 @@ loinc_code = pd.read_csv('LOINC CODE.csv')
 list(loinc_code.columns)
 loinc_code.drop_duplicates(subset=['LOINC Code'], keep='first')
 
-#####  #####
+##### Inserting the values into the tables #####
+
+insertQuery = """INSERT INTO patients (
+    mrn, 
+    first_name, 
+    last_name, 
+    zip_code, 
+    dob, 
+    gender, 
+    contact_mobile, 
+    contact_email
+    ) 
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+"""
+
+for index, row in df_fake_patients.iterrows():
+    db.execute(insertQuery, (row['mrn'], row['first_name'], row['last_name'], row['zip_code'], row['dob'], row['gender'], row['contact_mobile'], row['contact_email']))
+    print("inserted row: ", index)
+
+insertQuery = "INSERT INTO medications (med_ndc, med_human_name) VALUES (%s, %s)"
+
+startingRow = 0
+for index, row in ndc_codes_1k.iterrows(): 
+    startingRow += 1 
+    db.execute(insertQuery, (row['PRODUCTNDC'], row['NONPROPRIETARYNAME']))
+    print("Row completed: ", index)
+    ## stop once we have 20 rows
+    if startingRow == 20:
+        break
+
+insertQuery = "INSERT INTO treatments_procedure (treatment_cpt_code, cpt_code_description) VALUES (%s, %s)" 
+
+startingRow = 0 
+for index, row in cpt_codes_1k.iterrows():
+    startingRow += 1 
+    db.execute(insertQuery, (row['CPT code'], row['label']))
+    print("inserted row #: ", index)
+    if startingRow == 20: 
+        break 
+
+insertQuery = "INSERT INTO conditions (icd10_code, icd10_description) VALUES (%s, %s)"
+
+startingRow = 0
+for index, row in icd10_code_short_1k.iterrows():
+    startingRow += 1
+    db.execute(insertQuery, (row['CodeWithSeparator'], row['ShortDescription']))
+    print("inserted row db: ", index)
+    if startingRow == 20:
+        break
+
+insertQuery = "INSERT INTO social_determinant (loinc_code, loinc_code_desciprtion) VALUES (%s, %s)"
+
+startingRow = 0 
+for index, row in loinc_code.iterrows():
+    startingRow += 1 
+    db.execute(insertQuery, (row['LOINC Code'], row['Description ']))
+    print("inserted row #: ", index)
+    if startingRow == 20:
+        break 
+
+##### inserting values for tables with foreign key ##### 
+
+df_treatment = pd.read_sql_query("SELECT treatment_cpt_code FROM treatments_procedure", db)
+df_patients = pd.read_sql_query("SELECT mrn FROM patients", db)
+
+# create a dataframe that is stacked and give each patient a random number of conditions between 1 and 5
+df_patient_treatment = pd.DataFrame(columns=['mrn', 'treatment_cpt_code'])
+# for each patient in df_patient_conditions, take a random number of conditions between 1 and 10 from df_conditions and palce it in df_patient_conditions
+for index, row in df_patients.iterrows():
+    # get a random number of conditions between 1 and 5
+    # numtreatment = random.randint(1, 5)
+    # get a random sample of conditions from df_conditions
+    df_treatment_sample = df_treatment.sample(n=random.randint(1, 5))
+    # add the mrn to the df_conditions_sample
+    df_treatment_sample['mrn'] = row['mrn']
+    # append the df_conditions_sample to df_patient_conditions
+    df_patient_treatment = df_patient_treatment.append(df_treatment_sample)
+
+df_patient_treatment.rename(columns={'treatment_cpt_code':'cpt_code'},inplace=True) ## changing the column name to match the new name
+
+insertQuery = "INSERT INTO patient_treatment (mrn, cpt_code) VALUES (%s, %s)"
+
+for index, row in df_patient_treatment.iterrows():
+    db.execute(insertQuery, (row['mrn'], row['cpt_code']))
+    print("inserted row #: ", index)
+
+df_pm = pd.read_sql_query("SELECT med_ndc FROM medications", db)
+df_patients2 = pd.read_sql_query("SELECT mrn FROM patients", db)
+
+df_patient_medication = pd.DataFrame(columns=['mrn', 'med_ndc'])
+
+for index, row in df_patients2.iterrows():
+    df_medication_sample = df_pm.sample(n=random.randint(1, 5))
+    df_medication_sample['mrn'] = row['mrn']
+    df_patient_medication = df_patient_medication.append(df_medication_sample)
+
+df_patient_medication.rename(columns={'med_ndc':'ndc_code'},inplace=True)
+    
+insertQuery = "INSERT INTO patient_medications (mrn, ndc_code) VALUES (%s, %s)"
+
+startingRow = 0
+for index, row in df_patient_medication.iterrows():
+    startingRow += 1
+    db.execute(insertQuery, (row['mrn'], row['ndc_code']))
+    print("inserted row #: ", index)
+    if startingRow == 30:
+        break
+
+##### confirming the data insertion functioned properly ##### 
+
+df_patients = pd.read_sql_query("SELECT * FROM patients", db) 
+df_medications = pd.read_sql_query("SELECT * FROM medications", db)
+df_treatment_procedure = pd.read_sql_query("SELECT * FROM treatments_procedure")
+df_conditions = pd.read_sql_query("SELECT * FROM conditions", db)
+df_social_determinant = pd.read_sql_query("SELECT * FROM social_determinant", db)
+df_pt = pd.read_sql_query("SELECT * FROM patient_treatment", db)
+df_patientmed = pd.read_sql_query("SELECT * FROM patient_medications", db)
