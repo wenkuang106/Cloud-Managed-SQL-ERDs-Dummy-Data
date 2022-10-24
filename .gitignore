@@ -4,3 +4,6 @@
 
 .csv 
 *.csv
+
+.txt
+*txt 
