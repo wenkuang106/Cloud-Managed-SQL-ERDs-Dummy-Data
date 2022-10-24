@@ -188,3 +188,11 @@ df_conditions = pd.read_sql_query("SELECT * FROM conditions", db)
 df_social_determinant = pd.read_sql_query("SELECT * FROM social_determinant", db)
 df_pt = pd.read_sql_query("SELECT * FROM patient_treatment", db)
 df_patientmed = pd.read_sql_query("SELECT * FROM patient_medications", db)
+
+##### Performing query task listed for Assignment ##### 
+
+query1 = pd.read_sql_query("show databases", db)
+query2 = pd.read_sql_query("show tables", db)
+query3 = pd.read_sql_query("SELECT * FROM patient_portal.medications", db) 
+query4 = pd.read_sql_query("SELECT * FROM patient_portal.treatments_procedure", db)
+query5 = pd.read_sql_query("SELECT * FROM patient_portal.conditions", db)
