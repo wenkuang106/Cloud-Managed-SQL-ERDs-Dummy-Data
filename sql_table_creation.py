@@ -70,7 +70,7 @@ create table if not exists conditions (
 social_determinant = """
 create table if not exists social_determinant (
     id int auto_increment, 
-    social_determinant_loinc_code varchar(255) default null unique, 
+    loinc_code varchar(255) default null unique, 
     loinc_code_desciprtion varchar(255) default null, 
     PRIMARY KEY (id)
 );
@@ -85,7 +85,7 @@ create table if not exists patient_current_info (
     PRIMARY KEY (id),
     FOREIGN KEY (mrn) REFERENCES patients(mrn) ON DELETE CASCADE, 
     FOREIGN KEY (icd10_code) REFERENCES conditions(icd10_code) ON DELETE CASCADE, 
-    FOREIGN KEY (loinc_code) REFERENCES social_determinant(social_determinant_loinc_code) ON DELETE CASCADE
+    FOREIGN KEY (loinc_code) REFERENCES social_determinant(loinc_code) ON DELETE CASCADE
 );
 """
 
