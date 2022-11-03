@@ -4,6 +4,7 @@
 
 .csv 
 *.csv
+!LOINC CODE.csv
 
 .txt
 *txt 

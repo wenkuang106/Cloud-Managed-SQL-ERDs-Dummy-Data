@@ -196,3 +196,20 @@ query2 = pd.read_sql_query("show tables", db)
 query3 = pd.read_sql_query("SELECT * FROM patient_portal.medications", db) 
 query4 = pd.read_sql_query("SELECT * FROM patient_portal.treatments_procedure", db)
 query5 = pd.read_sql_query("SELECT * FROM patient_portal.conditions", db)
+
+### Comment it out later ### 
+
+df_conditions_fake = pd.read_sql_query("SELECT icd10_code FROM conditions", db)
+df_patients_fake = pd.read_sql_query("SELECT mrn FROM patients", db)
+df_social_fake = pd.read_sql_query("SELECT loinc_code FROM social_determinant", db)
+
+df_patient_ccurrent_info = pd.DataFrame(columns=['mrn', 'icd10_code', 'loinc_code'])
+
+for index, row in df_patients_fake.iterrows():
+    randomCount = random.randint(1,5)   
+    df_conditions_sample = df_conditions_fake.sample(randomCount)
+    df_conditions_sample['mrn'] = row['mrn']
+    df_social_sample = df_social_fake.sample(randomCount)
+    df_patient_ccurrent_info = df_patient_ccurrent_info.append(df_conditions_sample)
+    df_patient_ccurrent_info = df_patient_ccurrent_info.append(df_social_sample)
+
